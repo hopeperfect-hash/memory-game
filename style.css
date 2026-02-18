@@ -1,0 +1,339 @@
+/* CSS Custom Properties for Theming */
+:root {
+    --bg-color: #0f172a;       /* Deep slate */
+    --surface-color: rgba(30, 41, 59, 0.7); /* Translucent slate */
+    --primary-color: #3b82f6;  /* Blue */
+    --accent-color: #8b5cf6;   /* Violet */
+    --success-color: #10b981;  /* Emerald */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --tile-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+    
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy */
+}
+
+/* Reset & Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Prevent scroll from absolute background elements */
+    position: relative;
+}
+
+/* Typography elements */
+h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+}
+
+.glow-text {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+.glow-text-success {
+    font-family: 'Outfit', sans-serif;
+    font-size: 3rem;
+    color: var(--success-color);
+    text-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+/* Background elements for premium aesthetic */
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: -1;
+    opacity: 0.5;
+}
+
+.orb-1 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
+    top: -100px;
+    left: -100px;
+    animation: float 20s ease-in-out infinite alternate;
+}
+
+.orb-2 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
+    bottom: 10%;
+    right: 5%;
+    animation: float 15s ease-in-out infinite alternate-reverse;
+}
+
+.orb-3 {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, var(--success-color) 0%, transparent 70%);
+    top: 40%;
+    left: 20%;
+    opacity: 0.2;
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, 50px) scale(1.1); }
+}
+
+/* Main Layout */
+.app-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Header & Stats */
+.game-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.stats-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-box {
+    background: var(--surface-color);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--glass-shadow);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Reusable Glass Button */
+.glass-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.glass-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.glass-button.cta {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border: none;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.025em;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.glass-button.cta:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+}
+
+/* Game Board */
+.grid-4x4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 1rem;
+    aspect-ratio: 1 / 1; /* Keep it square */
+    width: 100%;
+    margin: 0 auto;
+    perspective: 1000px; /* Important for 3D flip effect */
+}
+
+/* Tile Styles */
+.tile {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d; /* Allows flipping */
+    transition: transform var(--transition-normal), opacity var(--transition-normal);
+    border-radius: 12px;
+}
+
+.tile:hover:not(.flipped):not(.matched) {
+    transform: scale(1.05);
+    box-shadow: var(--tile-shadow);
+}
+
+/* The actual flip happening here */
+.tile.flipped {
+    transform: rotateY(180deg);
+}
+
+/* State when matched - fades out and scales down */
+.tile.matched {
+    transform: rotateY(180deg) scale(0.8);
+    opacity: 0;
+    pointer-events: none; /* Can't click anymore */
+}
+
+/* Front & Back rendering */
+.tile-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* Hides back when facing front */
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+}
+
+/* The front (default visible, looks like back of card) */
+.tile-front {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transform: rotateY(0deg); /* Explicit orientation */
+}
+
+/* Add a subtle pattern/icon to the back of the cards */
+.tile-front::after {
+    content: '?';
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    color: rgba(255, 255, 255, 0.2);
+    font-weight: bold;
+}
+
+/* The back (hidden initially, holds the image) */
+.tile-back {
+    transform: rotateY(180deg);
+    background-color: var(--surface-color);
+    border: 2px solid var(--accent-color);
+}
+
+.tile-back img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none; /* Prevent image dragging issues */
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 1;
+    transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.glass-panel {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 3rem;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: translateY(0) scale(1);
+    transition: transform var(--transition-normal);
+}
+
+.modal-overlay.hidden .glass-panel {
+    transform: translateY(20px) scale(0.95);
+}
+
+.glass-panel p {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.highlight {
+    color: var(--text-main);
+    font-weight: bold;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .app-container {
+        padding: 1rem;
+    }
+    
+    .grid-4x4 {
+        gap: 0.5rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .glass-panel {
+        padding: 2rem 1.5rem;
+        width: 90%;
+    }
+}
