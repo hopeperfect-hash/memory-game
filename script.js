@@ -1,76 +1,110 @@
+// Game Levels Configuration
+const levels = [
+    { level: 1, subtitle: "Getting Started", gridSize: "grid-2x2", pairs: 2, time: 0 },
+    { level: 2, subtitle: "Speedy Puppies", gridSize: "grid-3x4", pairs: 6, time: 45 },
+    { level: 3, subtitle: "Cute Overload", gridSize: "grid-4x4", pairs: 8, time: 60 } // Level 12 style equivalent
+];
+
+// Available images from project /images/ folder
+const puppyImages = [
+    "a-cute-mini-goldendoodle-puppy-looking-at-the-camera_SoySendra_Shutterstock-800x534.jpg",
+    "depositphotos_842831286-stock-photo-studio-portrait-golden-retriever-panting.jpg",
+    "dog-animal_DOTORLBDD7.jpg",
+    "dog-puppy_X8VPPWVKKY.jpg",
+    "free-dog-pictures-7.jpg",
+    "happy-white-dog-0410-5701543.webp",
+    "istockphoto-1589824836-612x612.jpg",
+    "istockphoto-2026155202-612x612.webp",
+    "pexels-daniel-franco-25130847-6999621.jpg",
+    "puppy-1047521_1280.jpg",
+    "puppy-1903313_1280.jpg",
+    "selective-focus-shot-adorable-kooikerhondje-dog_181624-37636.avif"
+];
+
 // DOM Elements
 const gameBoard = document.getElementById('game-board');
 const scoreDisplay = document.getElementById('score');
-const movesDisplay = document.getElementById('moves');
-const restartBtn = document.getElementById('restart-btn');
+const bestMovesDisplay = document.getElementById('best-moves');
+const timerDisplay = document.getElementById('timer');
+const movesTopDisplay = document.getElementById('moves-top');
+const levelTitleDisplay = document.getElementById('level-title');
+const levelSubtitleDisplay = document.getElementById('level-subtitle');
+
+const restartBtnFooter = document.getElementById('restart-btn-footer');
 const playAgainBtn = document.getElementById('play-again-btn');
 const winModal = document.getElementById('win-modal');
 const finalMovesDisplay = document.getElementById('final-moves');
 
-// Game State Variables
-let tiles = [];
+// Game State
+let currentLevelIndex = 0;
 let flippedTiles = [];
 let matchedPairs = 0;
 let moves = 0;
-let isBoardLocked = false; // Prevent clicks while animations are running
-const TOTAL_PAIRS = 8;     // 16 tiles total
-
-// Beautiful specific images from Unsplash via Picsum id routing for consistency
-// Selected to be distinct and vibrant
-const imageIds = [
-    '10', '13', '15', '16', 
-    '17', '22', '28', '29'
-];
+let isBoardLocked = false;
+let timerSeconds = 0;
+let timerInterval = null;
 
 /**
- * Initialize a new game
+ * Initialize selected level
  */
-function initGame() {
-    // Reset state
+function initGame(levelIndex = 0) {
+    currentLevelIndex = levelIndex;
+    const currentLevel = levels[currentLevelIndex];
+
+    // Reset State
     matchedPairs = 0;
     moves = 0;
     flippedTiles = [];
     isBoardLocked = false;
     
-    // Update UI
-    updateScore();
-    movesDisplay.textContent = moves;
+    // UI Update
+    levelTitleDisplay.textContent = `Level ${currentLevel.level}`;
+    levelSubtitleDisplay.textContent = currentLevel.subtitle;
+    movesTopDisplay.textContent = moves;
+    scoreDisplay.textContent = `0 / ${currentLevel.pairs}`;
+    
+    // Load Best Score from LocalStorage
+    const bestMoves = localStorage.getItem(`bestMoves_lvl${currentLevel.level}`) || "-";
+    bestMovesDisplay.textContent = bestMoves;
+
     winModal.classList.add('hidden');
-    
-    // Clear board
+
+    // Setup Grid View
+    gameBoard.className = currentLevel.gridSize; // Apply grid-2x2 etc.
     gameBoard.innerHTML = '';
-    
-    // Generate and shuffle tiles Array
-    const tileData = generateTileData();
+
+    // Timer Setting
+    clearInterval(timerInterval);
+    if (currentLevel.time > 0) {
+        timerSeconds = currentLevel.time;
+        updateTimerUI();
+        timerInterval = setInterval(countDown, 1000);
+    } else {
+        timerDisplay.textContent = "--:--";
+    }
+
+    // Generate Cards
+    const tileData = generateTileData(currentLevel.pairs);
     const shuffledTiles = shuffleArray(tileData);
-    
-    // Create DOM elements
     createBoard(shuffledTiles);
 }
 
 /**
- * Creates 16 tile objects (8 pairs) using predefined image IDs
+ * Generate pairs of images
  */
-function generateTileData() {
+function generateTileData(pairCount) {
     const data = [];
+    // Shuffle puppyImages to get random subset
+    const shuffledImages = shuffleArray(puppyImages);
     
-    // Create a pair for each image ID
-    imageIds.forEach((id, index) => {
-        // We use a specific ID to ensure the images don't change randomly 
-        // between matching attempts
-        const imgUrl = `https://picsum.photos/id/${id}/200/200`;
-        
-        // Push twice for a pair
-        data.push({ id: index, imgUrl });
-        data.push({ id: index, imgUrl });
-    });
-    
+    for (let i = 0; i < pairCount; i++) {
+        const imgPath = `images/${shuffledImages[i]}`;
+        data.push({ id: i, imgPath });
+        data.push({ id: i, imgPath });
+    }
     return data;
 }
 
-/**
- * Fisher-Yates array shuffle algorithm
- */
 function shuffleArray(array) {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -80,143 +114,112 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-/**
- * Generate DOM elements for the game board
- */
-function createBoard(shuffledTiles) {
-    shuffledTiles.forEach((tileData, index) => {
-        // Create main tile container
-        const tileElement = document.createElement('div');
-        tileElement.classList.add('tile');
-        tileElement.dataset.id = tileData.id;
-        tileElement.dataset.index = index;
-        
-        // Create front face (shows default pattern before flipping)
-        const frontFace = document.createElement('div');
-        frontFace.classList.add('tile-face', 'tile-front');
-        
-        // Create back face (shows the actual image)
-        const backFace = document.createElement('div');
-        backFace.classList.add('tile-face', 'tile-back');
-        
+function createBoard(tiles) {
+    tiles.forEach((tileData, index) => {
+        const tile = document.createElement('div');
+        tile.classList.add('tile');
+        tile.dataset.id = tileData.id;
+        tile.dataset.index = index;
+
+        const front = document.createElement('div');
+        front.classList.add('tile-face', 'tile-front');
+
+        const back = document.createElement('div');
+        back.classList.add('tile-face', 'tile-back');
+
         const img = document.createElement('img');
-        img.src = tileData.imgUrl;
-        img.alt = 'Memory tile';
+        img.src = tileData.imgPath;
+        img.alt = "Puppy";
         
-        // Append elements
-        backFace.appendChild(img);
-        tileElement.appendChild(frontFace);
-        tileElement.appendChild(backFace);
-        
-        // Add click listener
-        tileElement.addEventListener('click', () => handleTileClick(tileElement));
-        
-        gameBoard.appendChild(tileElement);
+        back.appendChild(img);
+        tile.appendChild(front);
+        tile.appendChild(back);
+
+        tile.addEventListener('click', () => handleTileClick(tile));
+        gameBoard.appendChild(tile);
     });
 }
 
-/**
- * Handle clicking on a tile
- */
 function handleTileClick(tile) {
-    // Ignore clicks if board is locked, tile is already matched, or already flipped
-    if (
-        isBoardLocked || 
-        tile.classList.contains('matched') || 
-        tile.classList.contains('flipped')
-    ) {
-        return;
-    }
+    if (isBoardLocked || tile.classList.contains('flipped') || tile.classList.contains('matched')) return;
 
-    // Flip the tile
     tile.classList.add('flipped');
     flippedTiles.push(tile);
 
-    // If two tiles are flipped, check for a match
     if (flippedTiles.length === 2) {
         moves++;
-        movesDisplay.textContent = moves;
+        movesTopDisplay.textContent = moves;
         checkForMatch();
     }
 }
 
-/**
- * Compare the two flipped tiles
- */
 function checkForMatch() {
-    isBoardLocked = true; // Lock board during check
-    
-    const [tile1, tile2] = flippedTiles;
-    const isMatch = tile1.dataset.id === tile2.dataset.id;
-    
-    if (isMatch) {
-        handleMatch(tile1, tile2);
+    isBoardLocked = true;
+    const [t1, t2] = flippedTiles;
+
+    if (t1.dataset.id === t2.dataset.id) {
+        setTimeout(() => {
+            t1.classList.add('matched');
+            t2.classList.add('matched');
+            matchedPairs++;
+            scoreDisplay.textContent = `${matchedPairs} / ${levels[currentLevelIndex].pairs}`;
+            
+            flippedTiles = [];
+            isBoardLocked = false;
+            checkWinCondition();
+        }, 500);
     } else {
-        handleMismatch(tile1, tile2);
+        setTimeout(() => {
+            t1.classList.remove('flipped');
+            t2.classList.remove('flipped');
+            flippedTiles = [];
+            isBoardLocked = false;
+        }, 1000);
     }
 }
 
-/**
- * Actions to take when a match is found
- */
-function handleMatch(tile1, tile2) {
-    // Wait briefly so user sees the match, then run disappear logic
-    setTimeout(() => {
-        tile1.classList.add('matched');
-        tile2.classList.add('matched');
-        
-        matchedPairs++;
-        updateScore();
-        
-        resetTurn();
-        checkWinCondition();
-    }, 600); // Wait 600ms before dissolving
-}
-
-/**
- * Actions to take when cards do not match
- */
-function handleMismatch(tile1, tile2) {
-    // Wait for the flip animation to finish + a little time for the user to memorize
-    setTimeout(() => {
-        tile1.classList.remove('flipped');
-        tile2.classList.remove('flipped');
-        
-        resetTurn();
-    }, 1000); // Give user 1 second to look at the cards
-}
-
-/**
- * Reset local turn variables
- */
-function resetTurn() {
-    flippedTiles = [];
-    isBoardLocked = false;
-}
-
-/**
- * Update the UI score
- */
-function updateScore() {
-    scoreDisplay.textContent = `${matchedPairs} / ${TOTAL_PAIRS}`;
-}
-
-/**
- * Check if the game is over
- */
 function checkWinCondition() {
-    if (matchedPairs === TOTAL_PAIRS) {
-        // Wait for final disappearing animation
+    const currentLevel = levels[currentLevelIndex];
+    if (matchedPairs === currentLevel.pairs) {
+        clearInterval(timerInterval);
+        
+        // Save Best Score
+        const savedBest = localStorage.getItem(`bestMoves_lvl${currentLevel.level}`);
+        if (!savedBest || moves < savedBest) {
+            localStorage.setItem(`bestMoves_lvl${currentLevel.level}`, moves);
+            bestMovesDisplay.textContent = moves;
+        }
+
         setTimeout(() => {
             finalMovesDisplay.textContent = moves;
             winModal.classList.remove('hidden');
-        }, 500);
+        }, 600);
     }
 }
 
-// Event Listeners
-restartBtn.addEventListener('click', initGame);
-playAgainBtn.addEventListener('click', initGame);
+function countDown() {
+    timerSeconds--;
+    updateTimerUI();
+    if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        alert("Time is up! Game Over!");
+        initGame(currentLevelIndex); // restart same level
+    }
+}
 
-// Bootstrap the game on load
-document.addEventListener('DOMContentLoaded', initGame);
+function updateTimerUI() {
+    const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+    const secs = (timerSeconds % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${mins}:${secs}`;
+}
+
+// Event Listeners
+restartBtnFooter.addEventListener('click', () => initGame(currentLevelIndex));
+playAgainBtn.addEventListener('click', () => {
+    // Progress to next level if available, or loop
+    const nextLvl = (currentLevelIndex + 1) % levels.length;
+    initGame(nextLvl);
+});
+
+// Load
+document.addEventListener('DOMContentLoaded', () => initGame(0));

@@ -13,26 +13,68 @@
 </head>
 <body>
     <div id="app" class="app-container">
-        <header class="game-header glow-text">
-            <h1>Memory Match</h1>
-            <div class="stats-container">
-                <div class="stat-box">
-                    <span class="stat-label">Pairs Matched</span>
-                    <span class="stat-value" id="score">0 / 8</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Moves</span>
-                    <span class="stat-value" id="moves">0</span>
-                </div>
+        <!-- Top mobile app-like Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button id="back-btn" class="circ-btn">←</button>
             </div>
-            <button id="restart-btn" class="glass-button">Restart Game</button>
+            <div class="header-center">
+                <div id="level-title" class="title-main">Level 1</div>
+                <div id="level-subtitle" class="title-sub">Cute Puppies</div>
+            </div>
+            <div class="header-right">
+                <div class="pill-stat">
+                    <span class="timer-icon">⏱️</span>
+                    <span id="timer">00:00</span>
+                    <span class="divider">|</span>
+                    <span class="moves-icon">📄</span>
+                    <span id="moves-top">0</span>
+                </div>
+                <button id="pause-btn" class="circ-btn">⏸</button>
+            </div>
         </header>
+
+        <!-- Centered Scoreboard -->
+        <section class="banner-scoreboard">
+            <div class="board-column">
+                <span class="board-label">BEST MOVES</span>
+                <span id="best-moves" class="board-value">0</span>
+            </div>
+            <div class="board-column">
+                <span class="board-label">TOTAL MATCHES</span>
+                <span id="score" class="board-value">0 / 2</span>
+            </div>
+        </section>
 
         <main class="game-board-container">
             <div id="game-board" class="grid-4x4">
                 <!-- Tiles will be dynamically injected here by JS -->
             </div>
         </main>
+
+        <!-- Game Control Footer -->
+        <footer class="game-footer">
+            <button id="restart-btn-footer" class="primary-btn-restart">
+                <span class="icon-refresh">🔄</span> Restart Game
+            </button>
+            <button id="settings-btn" class="circ-btn settings-btn">⚙️</button>
+        </footer>
+
+        <!-- Bottom Tab Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" id="nav-play">
+                <span class="nav-icon">🎮</span>
+                <span class="nav-label">Play</span>
+            </button>
+            <button class="nav-item" id="nav-stats">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Stats</span>
+            </button>
+            <button class="nav-item" id="nav-settings">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </button>
+        </nav>
 
         <!-- Win Modal Overlay -->
         <div id="win-modal" class="modal-overlay hidden">
